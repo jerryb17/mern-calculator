@@ -1,8 +1,8 @@
-import React, { useContext } from 'react'; // import useContext
-import { CalcuContext } from '../context/CalcuContext'; // import CalcuContext
+import React, { useContext } from 'react';
+import { CalcuContext } from '../context/CalcuContext';
 
 const History = () => {
-  const { history } = useContext(CalcuContext); // use useContext to access history
+  const { history } = useContext(CalcuContext);
 
   return (
     <div>

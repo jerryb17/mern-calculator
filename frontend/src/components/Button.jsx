@@ -1,7 +1,6 @@
 import React, { useContext } from 'react';
 import axios from 'axios';
 import { CalcuContext } from '../context/CalcuContext';
-import History from './History';
 //to assign className according to there sign
 const getStyleName = (btn) => {
   const className = {
@@ -31,22 +30,49 @@ const Button = ({ value }) => {
   const resetClick = () => {
     setCalc({ sign: '', num: 0, res: 0 });
   };
-  // User click number
-  const handleClickButton = () => {
-    const numberString = value.toString();
-
-    let numberValue;
-    if (numberString === '0' && calc.num === 0) {
-      numberValue = '0';
+  // User click ops
+  const handleSignClick = () => {
+    if (calc.num) {
+      setCalc({
+        ...calc,
+        res: calc.num,
+        num: '',
+        sign: value,
+      });
     } else {
-      numberValue = Number(calc.num + numberString);
+      setCalc({
+        ...calc,
+        sign: value,
+      });
     }
-
-    setCalc({
-      ...calc,
-      num: numberValue,
-    });
   };
+
+  // User click number + ops
+  const handleClickButton = () => {
+    if (['+', '-', '*', '/'].includes(value)) {
+      handleSignClick();
+    } else {
+      const numberString = value.toString();
+
+      let numberValue;
+      if (numberString === '0' && calc.num === 0) {
+        numberValue = '0';
+      } else {
+        // Check result already present
+        if (calc.res !== 0) {
+          // If, reset the calculator's state
+          setCalc({ sign: '', num: 0, res: 0 });
+        }
+        numberValue = Number(calc.num + numberString);
+      }
+
+      setCalc({
+        ...calc,
+        num: numberValue,
+      });
+    }
+  };
+
   // User click operations
   const signClick = () => {
     setCalc({
@@ -55,49 +81,59 @@ const Button = ({ value }) => {
       num: 0,
     });
   };
+
   // User click equals
   const equalsClick = async () => {
-    if (calc.res && calc.num) {
-      const math = (a, b, sign) => {
-        const result = {
-          '+': (a, b) => a + b,
-          '-': (a, b) => a - b,
-          '*': (a, b) => a * b,
-          '/': (a, b) => a / b,
+    if (calc.sign) {
+      if (calc.res && calc.num) {
+        const math = (a, b, sign) => {
+          const result = {
+            '+': (a, b) => a + b,
+            '-': (a, b) => a - b,
+            '*': (a, b) => a * b,
+            '/': (a, b) => a / b,
+          };
+          return result[sign](a, b);
         };
-        return result[sign](a, b);
-      };
-      const result = math(Number(calc.res), Number(calc.num), calc.sign);
-      await setCalc({
-        res: result,
-        sign: '',
-        num: 0,
-      });
+        const result = math(Number(calc.res), Number(calc.num), calc.sign);
+        await setCalc({
+          res: result,
+          sign: '',
+          num: 0,
+        });
 
-      // Send a request to the backend
-      const { data } = await axios.post('http://localhost:5000/api/calculate', {
-        num1: calc.res,
-        num2: calc.num,
-        operator: calc.sign,
-      });
-      setHistory([...history, data]);
+        // Send a request to the backend
+        const { data } = await axios.post(
+          'http://localhost:5000/api/calculate',
+          {
+            num1: calc.res,
+            num2: calc.num,
+            operator: calc.sign,
+          }
+        );
+        setHistory([...history, data]);
+      }
+    } else {
+      setCalc({ sign: '', num: 0, res: 0 });
     }
   };
   // User click DEL
   const deleteClick = () => {
-    let number = calc.num.toString().slice(0, -1);
-
-    let numberValue;
-    if (number === '') {
-      numberValue = '0';
+    if (calc.res && !calc.num) {
+      let number = calc.res.toString().slice(0, -1);
+      let numberValue = number === '' ? 0 : Number(number);
+      setCalc({
+        ...calc,
+        res: numberValue,
+      });
     } else {
-      numberValue = Number(number);
+      let number = calc.num.toString().slice(0, -1);
+      let numberValue = number === '' ? 0 : Number(number);
+      setCalc({
+        ...calc,
+        num: numberValue,
+      });
     }
-
-    setCalc({
-      ...calc,
-      num: numberValue,
-    });
   };
 
   const handleBtnClick = () => {

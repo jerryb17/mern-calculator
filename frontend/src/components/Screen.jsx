@@ -7,7 +7,9 @@ const Screen = () => {
 
   return (
     <Textfit className="screen" max={70} mode="single">
-      {calc.num ? calc.num : calc.res}
+      {calc.res ? calc.res : ''}
+      {calc.sign && ` ${calc.sign}`}
+      {calc.num ? ` ${calc.num}` : ''}
     </Textfit>
   );
 };
