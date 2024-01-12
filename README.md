@@ -9,4 +9,5 @@
 # on other terminal 
 # cd frontend
 # npm install
+// npm i react-textfit --force [ if you get a textfit error then only use this]
 # npm run dev
